@@ -3,6 +3,7 @@ import torch
 from torch import nn
 from network import NeuralNetwork
 from dataset import train_dataloader, test_dataloader
+import matplotlib.pyplot as plt
 
 
 # Get cpu or gpu device for training
@@ -14,9 +15,12 @@ model = NeuralNetwork().to(device)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
 
+losses = []
+
 
 def train(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset) # size is the number of samples in the dataset
+    losses.clear()
     model.train() # set the model to training mode
     for batch, (X, y) in enumerate(dataloader):
         X, y = X.to(device), y.to(device) # move tensors to the configured device
@@ -30,6 +34,13 @@ def train(dataloader, model, loss_fn, optimizer):
         if batch % 100 == 0:
             loss, current = loss.item(), batch*len(X)
             print(f"loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
+            losses.append(loss)
+
+    # Plot the loss vs epoch
+    plt.plot(losses)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.show()
 
 
 def test(dataloader, model, loss_fn):
